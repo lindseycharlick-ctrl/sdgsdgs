@@ -707,18 +707,18 @@ function sky(){
   function size(){
     const dpr = Math.min(2, window.devicePixelRatio || 1); w = innerWidth; h = innerHeight;
     cv.width = w * dpr; cv.height = h * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    seed = 7; stars = Array.from({ length: Math.round(w * h / 5200) }, () => ({ x: rnd()*w, y: rnd()*h, r: rnd()*1.1 + .2, p: rnd()*6.28, s: rnd()*.8 + .2 }));
+    seed = 7; stars = Array.from({ length: Math.round(w * h / 5200) }, () => ({ x: rnd()*w, y: rnd()*h, r: rnd()*1.2 + .25, p: rnd()*6.28, s: rnd()*1.1 + .5 }));
     lines = Array.from({ length: 4 }, () => { const cx = rnd()*w, cy = rnd()*h*.9; return Array.from({ length: 5 }, () => ({ x: cx + (rnd()-.5)*220, y: cy + (rnd()-.5)*160 })); });
   }
   function draw(t){
-    const moving = S.motion && !reduce;
+    const moving = S.motion;
     ctx.clearRect(0, 0, w, h);
     const g = ctx.createRadialGradient(w*.8, -h*.1, 0, w*.8, -h*.1, h*1.1); g.addColorStop(0, 'rgba(60,52,110,.35)'); g.addColorStop(1, 'rgba(13,16,32,0)');
     ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
     ctx.strokeStyle = 'rgba(201,164,92,.12)'; ctx.lineWidth = .7;
     lines.forEach(pts => { ctx.beginPath(); pts.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); ctx.stroke();
       pts.forEach(p => { ctx.fillStyle = 'rgba(234,223,198,.55)'; ctx.beginPath(); ctx.arc(p.x, p.y, 1.6, 0, 6.28); ctx.fill(); }); });
-    stars.forEach(s => { const a = moving ? .35 + .45 * (0.5 + 0.5 * Math.sin(t / 1000 * s.s + s.p)) : .6; ctx.fillStyle = `rgba(234,223,198,${a.toFixed(3)})`; ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 6.28); ctx.fill(); });
+    stars.forEach(s => { const a = moving ? .15 + .8 * Math.pow(0.5 + 0.5 * Math.sin(t / 1000 * s.s + s.p), 2) : .6; ctx.fillStyle = `rgba(234,223,198,${a.toFixed(3)})`; ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 6.28); ctx.fill(); });
     raf = moving ? requestAnimationFrame(draw) : 0;
   }
   size();
@@ -790,7 +790,8 @@ document.addEventListener('keydown', e => {
 document.addEventListener('pointerdown', unlockAudio, { once: true });
 
 /* ---------- Boot ---------- */
-S.motion = pref.get('motion', 'moving') !== 'still';
+const savedMotion = pref.get('motion', null);
+S.motion = savedMotion ? savedMotion === 'moving' : !matchMedia('(prefers-reduced-motion: reduce)').matches;
 S.view = pref.get('view', 'focus') === 'overview' ? 'overview' : 'focus';
 redrawSky = sky(); applyMotion(); renderMoon(); setModeUI(); render();
 setInterval(renderMoon, 36e5);
