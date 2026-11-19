@@ -1,0 +1,806 @@
+<title>Mindsey</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600&family=IM+Fell+English:ital@0;1&family=Spectral:ital,wght@0,400;0,500;1,400&display=swap">
+<style>
+/* Layout: one writing desk under a night sky. The writing box comes first; Focus shows at most three cards; Overview holds the rest. */
+:root{
+  --night:#0d1020;        /* midnight ink */
+  --night-2:#151a2e;      /* card ground */
+  --night-3:#1d2340;      /* raised / hover */
+  --parchment:#eadfc6;    /* body text */
+  --dim:#a39a86;          /* secondary text */
+  --brass:#c9a45c;        /* accent */
+  --brass-dim:#8a7444;
+  --verdigris:#6f9b8c;    /* tags */
+  --rule:rgba(201,164,92,.22);
+  --display:"IM Fell English","Iowan Old Style","Palatino Linotype",Georgia,serif;
+  --body:"Spectral","Iowan Old Style",Georgia,serif;
+  --label:"Cinzel","Trajan Pro","Times New Roman",serif;
+  color-scheme:dark;
+}
+html,body{min-height:100%}
+body{background:var(--night);color:var(--parchment);font-family:var(--body);font-size:17px;line-height:1.55;-webkit-font-smoothing:antialiased}
+#sky{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--night)}
+.wrap{position:relative;z-index:1;max-width:1040px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:22px 120px}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+
+/* Masthead */
+.mast{display:flex;gap:12px;align-items:center;justify-content:space-between}
+.mast h1{font-family:var(--display);font-weight:400;font-size:clamp(2rem,6vw,2.8rem);line-height:1;margin:0}
+.mast h1 i{color:var(--brass)}
+.mast-right{display:flex;gap:10px;align-items:center}
+@media (max-width:480px){.moon span{display:none}}
+.moon{display:flex;gap:8px;align-items:center;font-family:var(--label);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+.iconbtn{background:none;border:1px solid var(--rule);border-radius:999px;min-width:44px;min-height:44px;padding:0 12px;color:var(--dim);font-family:var(--label);font-size:.62rem;letter-spacing:.14em;text-transform:uppercase}
+.iconbtn:hover{color:var(--parchment);border-color:var(--brass-dim)}
+
+/* Writing box */
+.desk{margin-top:18px;background:linear-gradient(180deg,rgba(29,35,64,.94),rgba(21,26,46,.94));border:1px solid var(--rule);border-radius:6px;padding:16px;box-shadow:0 0 0 4px rgba(13,16,32,.6),0 18px 40px -20px #000}
+.desk-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+[hidden]{display:none!important}
+.desk-top label{font-family:var(--label);font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;color:var(--brass)}
+.modes{display:inline-flex;border:1px solid var(--rule);border-radius:999px;overflow:hidden}
+.modes button{background:none;border:0;padding:6px 12px;min-height:36px;font-size:.82rem;color:var(--dim)}
+.modes button[aria-pressed="true"]{background:var(--brass);color:#1a1408}
+#entry{display:block;width:100%;box-sizing:border-box;margin-top:10px;min-height:78px;resize:vertical;background:transparent;border:0;border-bottom:1px dashed var(--rule);padding:4px 0 10px;font-family:var(--display);font-size:1.35rem;line-height:1.4;color:var(--parchment)}
+#entry::placeholder{color:#77715f;font-style:italic}
+#entry:focus{outline:none;border-bottom-color:var(--brass)}
+.dumping #entry{min-height:150px}
+.preview{margin-top:8px;font-size:.9rem;color:var(--dim);min-height:1.4em}
+.preview b{color:var(--brass);font-weight:500}
+.desk-row{display:flex;gap:10px;align-items:center;margin-top:12px}
+.desk-row .sp{flex:1}
+.mic{width:56px;height:56px;border-radius:50%;border:1px solid var(--brass-dim);background:rgba(201,164,92,.08);display:grid;place-items:center;flex:none}
+.mic:hover{background:rgba(201,164,92,.16)}
+.mic[aria-pressed="true"]{background:var(--brass);border-color:var(--brass)}
+.mic[aria-pressed="true"] svg path,.mic[aria-pressed="true"] svg rect{stroke:#1a1408}
+.motion .mic[aria-pressed="true"]{animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 8px rgba(201,164,92,.18)}}
+.mic-note{font-size:.85rem;color:var(--dim)}
+.btn{background:var(--brass);color:#1a1408;border:0;border-radius:4px;min-height:48px;padding:0 22px;font-family:var(--label);font-weight:600;font-size:.8rem;letter-spacing:.16em;text-transform:uppercase}
+.btn:hover{background:#d8b56c}
+.btn:disabled{opacity:.5;cursor:default}
+.btn.ghost{background:none;color:var(--brass);border:1px solid var(--brass-dim)}
+.btn.ghost:hover{background:rgba(201,164,92,.1)}
+.btn.small{min-height:40px;padding:0 14px;font-size:.7rem}
+.btn.danger{background:none;color:#d4a2ab;border:1px solid #6e4450}
+
+/* Brain-dump review */
+.review{margin-top:14px;border-top:1px solid var(--rule);padding-top:12px}
+.review h2{font-family:var(--display);font-weight:400;font-size:1.3rem;margin:0}
+.review p{margin:2px 0 10px;color:var(--dim);font-size:.9rem}
+.review ul{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.review li label{display:flex;gap:12px;align-items:flex-start;background:rgba(13,16,32,.55);border:1px solid var(--rule);border-radius:4px;padding:10px 12px;cursor:pointer}
+.review li input{margin-top:5px;width:18px;height:18px;accent-color:var(--brass);flex:none}
+.review .kind{display:block;font-family:var(--label);font-size:.6rem;letter-spacing:.16em;text-transform:uppercase;color:var(--brass)}
+
+/* View switch */
+.views{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:24px}
+.seg{display:inline-flex;border:1px solid var(--rule);border-radius:4px;overflow:hidden}
+.seg button{background:none;border:0;min-height:44px;padding:0 16px;font-family:var(--label);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+.seg button[aria-pressed="true"]{background:var(--brass);color:#1a1408}
+.views .sp{flex:1}
+.status{font-size:.82rem;color:var(--dim);font-style:italic}
+
+/* Overview tools */
+.tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:14px}
+.search{flex:1 1 220px;min-width:0;position:relative}
+.search input{width:100%;box-sizing:border-box;min-height:44px;background:rgba(13,16,32,.7);border:1px solid var(--rule);border-radius:4px;padding:8px 12px 8px 36px;color:var(--parchment)}
+.search input:focus{outline:none;border-color:var(--brass-dim)}
+.search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);opacity:.6}
+.toggle{background:none;border:1px solid var(--rule);border-radius:4px;min-height:44px;padding:0 14px;color:var(--dim);font-size:.88rem}
+.toggle[aria-pressed="true"]{border-color:var(--brass);color:var(--parchment);background:rgba(201,164,92,.1)}
+.tags{display:flex;gap:6px;overflow-x:auto;margin-top:12px;padding-bottom:4px;scrollbar-width:thin}
+.chip{flex:none;background:none;border:1px solid rgba(111,155,140,.4);color:var(--verdigris);border-radius:3px;min-height:34px;padding:0 12px;font-family:var(--label);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase}
+.chip[aria-pressed="true"]{background:var(--verdigris);color:var(--night);border-color:var(--verdigris)}
+.chip .n{opacity:.6;margin-left:4px;font-variant-numeric:tabular-nums}
+
+/* Cards */
+.feed{margin-top:16px;columns:3 290px;column-gap:16px}
+.focus{margin-top:16px;display:grid;gap:16px;max-width:620px}
+.focus .card{font-size:1.06rem}
+.card{break-inside:avoid;margin:0 0 16px;background:var(--night-2);border:1px solid var(--rule);border-radius:4px;padding:14px 16px 12px;cursor:pointer;transition:background .15s,border-color .15s}
+.focus .card{margin:0}
+.card:hover{background:var(--night-3);border-color:rgba(201,164,92,.4)}
+.card.pinned{border-color:var(--brass-dim);box-shadow:inset 0 2px 0 var(--brass)}
+.card.example{opacity:.6;border-style:dashed;cursor:default}
+.eyebrow{display:flex;align-items:center;gap:8px;font-family:var(--label);font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--brass)}
+.eyebrow .sp{flex:1}
+.card .text{margin:8px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
+.card .text a{color:var(--brass);text-decoration-color:var(--brass-dim)}
+.card h3{font-family:var(--display);font-weight:400;font-size:1.35rem;margin:6px 0 4px;text-transform:capitalize}
+.when{font-family:var(--display);font-size:1.4rem;margin:6px 0 0}
+.left{font-size:.9rem;color:var(--brass);font-variant-numeric:tabular-nums}
+.left.past{color:var(--dim)}
+.bar{height:6px;border-radius:3px;background:rgba(201,164,92,.14);margin-top:8px;overflow:hidden}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--brass-dim),var(--brass));border-radius:3px}
+.meta{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;margin-top:10px;font-size:.78rem;color:var(--dim)}
+.meta .tag{color:var(--verdigris);font-family:var(--label);font-size:.6rem;letter-spacing:.14em;text-transform:uppercase}
+.meta .date{margin-left:auto;display:inline-flex;gap:5px;align-items:center;font-variant-numeric:tabular-nums}
+.linkbox{display:block;margin-top:8px;border:1px solid var(--rule);border-radius:3px;padding:8px 10px;background:rgba(13,16,32,.5);color:var(--parchment);text-decoration:none;overflow-wrap:anywhere;font-size:.88rem}
+.linkbox span{display:block;font-family:var(--label);font-size:.6rem;letter-spacing:.16em;color:var(--brass);text-transform:uppercase}
+.items{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:2px}
+.items label{display:flex;gap:12px;align-items:flex-start;padding:5px 0;cursor:pointer}
+.items input{appearance:none;flex:none;width:20px;height:20px;margin-top:3px;border:1px solid var(--brass-dim);border-radius:50%;display:grid;place-content:center}
+.items input:checked{background:var(--brass);border-color:var(--brass)}
+.items input:checked::after{content:"";width:7px;height:7px;background:var(--night);border-radius:50%}
+.items .done{color:var(--dim);text-decoration:line-through}
+.additem input{width:100%;box-sizing:border-box;background:none;border:0;border-bottom:1px dashed var(--rule);padding:6px 0;font-size:.95rem}
+.additem input:focus{outline:none;border-color:var(--brass)}
+.more{display:flex;justify-content:center;margin-top:6px}
+.empty{text-align:center;color:var(--dim);padding:24px 0 8px}
+.empty b{display:block;font-family:var(--display);font-weight:400;font-size:1.45rem;color:var(--parchment)}
+.group h2{font-family:var(--label);font-weight:500;font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;color:var(--verdigris);border-bottom:1px solid var(--rule);padding-bottom:8px;margin:22px 0 0;display:flex;justify-content:space-between}
+
+/* Sheet */
+.scrim{position:fixed;inset:0;z-index:20;background:rgba(5,7,15,.72);display:flex;align-items:flex-end;justify-content:center}
+@media (min-width:640px){.scrim{align-items:center}}
+.sheet{width:100%;max-width:560px;max-height:88%;overflow:auto;box-sizing:border-box;background:var(--night-2);border:1px solid var(--brass-dim);border-radius:8px 8px 0 0;padding:20px max(18px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(18px,env(safe-area-inset-left,0px))}
+@media (min-width:640px){.sheet{border-radius:8px}}
+.sheet h2{font-family:var(--display);font-weight:400;font-size:1.6rem;margin:0 0 4px}
+.sheet .sub{color:var(--dim);font-size:.88rem;margin:0 0 12px}
+.sheet textarea{width:100%;box-sizing:border-box;min-height:120px;resize:vertical;background:rgba(13,16,32,.6);border:1px solid var(--rule);border-radius:4px;padding:10px;color:var(--parchment)}
+.sheet .row{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.sheet .row .sp{flex:1}
+.cheats{display:grid;gap:10px;margin:0;padding:0;list-style:none}
+.cheats li{border-bottom:1px solid var(--rule);padding-bottom:10px}
+.cheats code{font-family:var(--display);font-size:1.05rem;color:var(--brass)}
+.cheats p{margin:2px 0 0;color:var(--dim);font-size:.9rem}
+kbd{font-family:var(--body);border:1px solid var(--rule);border-radius:3px;padding:0 5px;color:var(--parchment)}
+
+/* Toasts */
+.toasts{position:fixed;left:0;right:0;bottom:0;z-index:30;display:grid;justify-items:center;gap:8px;padding:0 max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));pointer-events:none}
+.toast{pointer-events:auto;max-width:520px;background:var(--night-3);border:1px solid var(--brass-dim);border-radius:6px;padding:10px 14px;display:flex;gap:12px;align-items:center;box-shadow:0 12px 30px -10px #000}
+.toast.bell{border-color:var(--brass)}
+.toast button{background:none;border:0;min-height:36px;color:var(--brass);font-family:var(--label);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase}
+footer{margin-top:36px;display:flex;justify-content:center}
+.linklike{background:none;border:0;color:var(--dim);text-decoration:underline;text-decoration-color:var(--rule);min-height:44px;font-size:.88rem}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<canvas id="sky" aria-hidden="true"></canvas>
+<div class="wrap" id="app">
+  <header class="mast">
+    <h1>Mind<i>sey</i></h1>
+    <div class="mast-right">
+      <div class="moon" id="moon"></div>
+      <button class="iconbtn" id="motionBtn" type="button"></button>
+    </div>
+  </header>
+
+  <section class="desk" id="desk" aria-label="Write something down">
+    <div class="desk-top">
+      <label for="entry" id="entryLabel">Write it down</label>
+      <div class="modes" role="group" aria-label="Writing mode">
+        <button type="button" data-mode="one" aria-pressed="true">One thing</button>
+        <button type="button" data-mode="dump" aria-pressed="false">Brain dump</button>
+      </div>
+    </div>
+    <textarea id="entry" rows="2" placeholder="An idea, a link, a list, a reminder&hellip;"></textarea>
+    <div class="preview" id="preview" aria-live="polite"></div>
+    <div class="desk-row">
+      <button class="mic" id="mic" type="button" aria-pressed="false" aria-label="Speak instead of typing" hidden>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" stroke="#c9a45c" stroke-width="1.6"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21" stroke="#c9a45c" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </button>
+      <span class="mic-note" id="micNote"></span>
+      <span class="sp"></span>
+      <button class="btn" id="save" type="button">Save</button>
+    </div>
+    <div class="review" id="review" hidden></div>
+  </section>
+
+  <div class="views">
+    <div class="seg" role="group" aria-label="View">
+      <button type="button" data-view="focus" aria-pressed="true">Focus</button>
+      <button type="button" data-view="overview" aria-pressed="false">Overview</button>
+    </div>
+    <span class="sp"></span>
+    <span class="status" id="status"></span>
+  </div>
+  <div id="tools" hidden>
+    <div class="tools">
+      <div class="search">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="7" cy="7" r="5" stroke="#c9a45c" stroke-width="1.4"/><path d="M11 11l3.5 3.5" stroke="#c9a45c" stroke-width="1.4" stroke-linecap="round"/></svg>
+        <input id="q" type="search" placeholder="Search everything" aria-label="Search everything">
+      </div>
+      <button class="toggle" id="groupBtn" type="button" aria-pressed="false">Group by tag</button>
+      <button class="toggle" id="vaultBtn" type="button" aria-pressed="false">Vault</button>
+    </div>
+    <div class="tags" id="tags" role="group" aria-label="Filter by tag"></div>
+  </div>
+
+  <main id="out"></main>
+  <footer><button class="linklike" id="guideBtn" type="button">How to write things &amp; export</button></footer>
+</div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<script>
+(() => {
+'use strict';
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const DAYS = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+const AREAS = ['dayjob','truecreeps','twe','home','spiritual','social','personal'];
+const RECENT_DAYS = 30;
+const S = { notes: [], q: '', tag: null, view: 'focus', group: false, vault: false, showOld: false, mode: 'one', store: null, ready: false, motion: true };
+const pref = { get(k, d){ try { const v = localStorage.getItem('mindsey-' + k); return v === null ? d : v; } catch { return d; } }, set(k, v){ try { localStorage.setItem('mindsey-' + k, v); } catch {} } };
+
+/* ---------- Moon ---------- */
+function moonPhase(t){ const syn = 29.530588853, ref = Date.UTC(2000,0,6,18,14); let p = ((t - ref) / 864e5 / syn) % 1; if (p < 0) p += 1; return p; }
+function phaseName(p){ return ['New moon','Waxing crescent','First quarter','Waxing gibbous','Full moon','Waning gibbous','Last quarter','Waning crescent'][Math.floor(p * 8 + .5) % 8]; }
+function moonSVG(p, size){
+  const r = size/2 - 1, c = size/2, rx = Math.abs(r * Math.cos(2*Math.PI*p));
+  const outer = p < .5 ? 1 : 0, term = (p < .25 || (p >= .5 && p < .75)) ? 0 : 1;
+  const lit = (p < .02 || p > .98) ? '' : `<path d="M${c} ${c-r} A${r} ${r} 0 0 ${outer} ${c} ${c+r} A${rx.toFixed(2)} ${r} 0 0 ${term} ${c} ${c-r}Z" fill="#eadfc6"/>`;
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" aria-hidden="true"><circle cx="${c}" cy="${c}" r="${r}" fill="#262c4a" stroke="#8a7444" stroke-width=".8"/>${lit}</svg>`;
+}
+function renderMoon(){ const p = moonPhase(Date.now()); $('#moon').innerHTML = `${moonSVG(p, 30)}<span>${phaseName(p)}</span>`; }
+
+/* ---------- Parsing ---------- */
+const clean = s => s.replace(/\s{2,}/g,' ').replace(/\s+([,.;!?])/g,'$1').replace(/(^|\s)(at|on|by|to)\s*$/i,'').replace(/^[\s,.;:-]+|[\s,;:-]+$/g,'').replace(/^to\s+/i,'').trim();
+function nextOccurrence(rep, from){
+  const d = new Date(from);
+  if (rep.type === 'daily'){ d.setHours(rep.hh, rep.mm, 0, 0); if (d <= from) d.setDate(d.getDate()+1); return d; }
+  if (rep.type === 'weekly'){ d.setHours(rep.hh, rep.mm, 0, 0); d.setDate(d.getDate() + (rep.dow - d.getDay() + 7) % 7); if (d <= from) d.setDate(d.getDate()+7); return d; }
+  const mk = (y,m) => new Date(y, m, Math.min(rep.dom, new Date(y, m+1, 0).getDate()), rep.hh, rep.mm);
+  let x = mk(from.getFullYear(), from.getMonth()); if (x <= from) x = mk(from.getFullYear(), from.getMonth()+1); return x;
+}
+function parseWhen(s, now){
+  let body = s.replace(/^\s*remind me\s*(?:to\s+)?/i,'');
+  const take = re => { const m = body.match(re); if (m) body = body.replace(m[0], ' '); return m; };
+  let m = take(/\bin\s+(\d+)\s*(minutes?|mins?|hours?|hrs?|days?)\b/i);
+  if (m){ const u = m[2][0].toLowerCase(); return { due: now.getTime() + (+m[1]) * (u==='m'?6e4:u==='h'?36e5:864e5), repeat:null, body: clean(body) }; }
+  let hh = null, mm = 0, repeat = null, dayFixed = false;
+  if ((m = take(/\b(?:at\s+)?(\d{1,2})(?::(\d{2}))?\s*(am|pm)\b/i))){ hh = (+m[1] % 12) + (m[3].toLowerCase()==='pm' ? 12 : 0); mm = +(m[2]||0); }
+  else if ((m = take(/\bat\s+(\d{1,2}):(\d{2})\b/i))){ hh = +m[1]; mm = +m[2]; }
+  else if (take(/\b(?:at\s+)?noon\b/i)) hh = 12;
+  if (take(/\b(?:every\s*day|daily)\b/i)) repeat = { type:'daily' };
+  else if ((m = take(/\bevery\s+(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\b/i))) repeat = { type:'weekly', dow: DAYS.indexOf(m[1].toLowerCase()) };
+  else if ((m = take(/\bevery\s+month\s+on\s+the\s+(\d{1,2})(?:st|nd|rd|th)?\b/i))) repeat = { type:'monthly', dom: Math.min(31, +m[1]) };
+  const base = new Date(now);
+  if (!repeat){
+    if (take(/\btomorrow\b/i)){ base.setDate(base.getDate()+1); dayFixed = true; }
+    else if (take(/\btonight\b/i)){ dayFixed = true; if (hh === null) hh = 20; else if (hh < 12) hh += 12; }
+    else if (take(/\btoday\b/i)) dayFixed = true;
+    else if ((m = take(/\b(?:on\s+)?(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\b/i))){
+      let diff = (DAYS.indexOf(m[1].toLowerCase()) - base.getDay() + 7) % 7; if (diff === 0) diff = 7;
+      base.setDate(base.getDate() + diff); dayFixed = true;
+    }
+  }
+  if (hh === null && !dayFixed && !repeat) return null;
+  if (hh === null) hh = 9;
+  if (repeat){ repeat.hh = hh; repeat.mm = mm; return { due: nextOccurrence(repeat, now).getTime(), repeat, body: clean(body) }; }
+  base.setHours(hh, mm, 0, 0);
+  if (!dayFixed && base <= now) base.setDate(base.getDate()+1);
+  return { due: base.getTime(), repeat: null, body: clean(body) };
+}
+function parse(raw, now = new Date()){
+  let text = raw.trim(); if (!text) return null;
+  const lead = text.match(/^#([A-Za-z][\w-]*)\s+([\s\S]+)$/);
+  if (lead && lead[1].toLowerCase() !== 'pin'){
+    const items = lead[2].split(/,|\n/).map(s => s.trim()).filter(Boolean);
+    return { kind:'list', name: lead[1].toLowerCase(), items };
+  }
+  const tags = []; let pinned = false;
+  text = text.replace(/(^|\s)#([A-Za-z][\w-]*)/g, (_, sp, t) => { t = t.toLowerCase(); if (t === 'pin') pinned = true; else if (!tags.includes(t)) tags.push(t); return sp; }).replace(/[ \t]{2,}/g,' ').trim();
+  if (/^\s*remind me\b/i.test(text)){
+    const w = parseWhen(text, now);
+    if (w && w.body) return { kind:'reminder', text: w.body, due: w.due, repeat: w.repeat, tags, pinned };
+    return { kind:'note', text, tags, pinned, warn:'No time found, so this was saved as a note. To make a reminder, add a time like “at 3pm” or “tomorrow at 9am”.' };
+  }
+  const url = (text.match(/https?:\/\/[^\s<>"]+/i) || [])[0];
+  if (url) return { kind:'link', text, url, tags, pinned };
+  return { kind:'note', text, tags, pinned };
+}
+
+/* ---------- Formatting ---------- */
+const tm = d => d.toLocaleTimeString(undefined, { hour:'numeric', minute:'2-digit' });
+function fmtWhen(t){
+  const d = new Date(t), now = new Date(), same = (a,b) => a.toDateString() === b.toDateString();
+  if (same(d, now)) return 'Today, ' + tm(d);
+  const tmr = new Date(now); tmr.setDate(tmr.getDate()+1); if (same(d, tmr)) return 'Tomorrow, ' + tm(d);
+  const yst = new Date(now); yst.setDate(yst.getDate()-1); if (same(d, yst)) return 'Yesterday, ' + tm(d);
+  return d.toLocaleDateString(undefined, { weekday:'short', day:'numeric', month:'short' }) + ', ' + tm(d);
+}
+function fmtLeft(due){
+  const ms = due - Date.now();
+  if (ms <= 0) return 'Was due ' + fmtWhen(due).replace(/^Today, /,'');
+  const mins = Math.round(ms / 6e4);
+  if (mins < 1) return 'In less than a minute';
+  if (mins < 60) return `In ${mins} min`;
+  const h = Math.floor(mins / 60), m = mins % 60;
+  if (h < 24) return `In ${h}h${m ? ' ' + m + 'm' : ''}`;
+  const dd = Math.floor(h / 24), hr = h % 24;
+  return `In ${dd} day${dd === 1 ? '' : 's'}${hr ? ' ' + hr + 'h' : ''}`;
+}
+function barPct(n){ const span = n.due - (n.armed || n.created); if (span <= 0) return 100; return Math.max(2, Math.min(100, (Date.now() - (n.armed || n.created)) / span * 100)); }
+const fmtDate = t => new Date(t).toLocaleDateString(undefined, { day:'numeric', month:'short' }) + ' · ' + tm(new Date(t));
+const ord = n => n + (([11,12,13].includes(n % 100)) ? 'th' : ({1:'st',2:'nd',3:'rd'}[n % 10] || 'th'));
+const cap = s => s[0].toUpperCase() + s.slice(1);
+const repLabel = r => !r ? '' : r.type === 'daily' ? 'Every day' : r.type === 'weekly' ? 'Every ' + cap(DAYS[r.dow]) : 'Every month on the ' + ord(r.dom);
+const host = u => { try { return new URL(u).hostname.replace(/^www\./,''); } catch { return 'link'; } };
+const linkify = s => esc(s).replace(/https?:\/\/[^\s<>&"]+/g, u => `<a href="${u}" target="_blank" rel="noopener">${u}</a>`);
+const newId = () => 'n' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+
+/* ---------- Storage ---------- */
+function localStore(){
+  const K = 'mindsey-notes';
+  const read = () => { try { return JSON.parse(localStorage.getItem(K) || '[]'); } catch { return []; } };
+  let cache = read();
+  const flush = () => { try { localStorage.setItem(K, JSON.stringify(cache)); } catch {} setNotes(cache.slice()); };
+  setTimeout(() => setNotes(cache.slice()), 0);
+  return { mode:'local',
+    put: async n => { const i = cache.findIndex(x => x.id === n.id); if (i < 0) cache.push(n); else cache[i] = n; flush(); },
+    del: async id => { cache = cache.filter(x => x.id !== id); flush(); } };
+}
+async function cloudStore(){
+  if (!window.claude || !window.claude.use) return null;
+  let db, user;
+  try { [db, user] = await Promise.all([claude.use('db'), claude.use('user')]); } catch { return null; }
+  if (!db || !user) return null;
+  let uid = null; try { uid = await user.id(); } catch {}
+  if (!uid) return null;
+  const col = db.collection('data/users/' + uid);
+  const timer = setTimeout(() => { if (!S.ready) setStatus('Can’t reach your notes yet. Check your connection.'); }, 10000);
+  col.onSnapshot(snap => {
+    if (!snap.metadata.fromCache){ clearTimeout(timer); setStatus(''); }
+    setNotes(snap.docs.filter(d => d.exists).map(d => d.data()));
+  }, e => { clearTimeout(timer); setStatus(e.code === 'revoked' ? 'This page can no longer reach your notes.' : 'Your notes stopped syncing. Reopen the page to reconnect.'); });
+  const run = async fn => {
+    try { await fn(); }
+    catch (e) {
+      if (e && e.code === 'unavailable'){ await new Promise(r => setTimeout(r, 400 + Math.random()*600)); try { await fn(); return; } catch (e2) { e = e2; } }
+      toast(e && e.code === 'quota_exceeded' ? 'Storage is full. Delete some old entries, then try again.' : e && e.code === 'invalid_argument' ? 'You can view these notes but not change them.' : 'That didn’t save. Check your connection and try again.');
+    }
+  };
+  return { mode:'cloud', put: n => run(() => col.doc(n.id).set(JSON.parse(JSON.stringify(n)))), del: id => run(() => col.doc(id).delete()) };
+}
+function setNotes(list){ S.notes = list; S.ready = true; render(); checkReminders(); }
+function setStatus(t){ $('#status').textContent = t; }
+
+/* ---------- Saving ---------- */
+async function saveParsed(p, quiet){
+  const now = Date.now();
+  if (p.kind === 'list'){
+    if (!p.items.length) return '';
+    const existing = S.notes.find(n => n.kind === 'list' && n.name === p.name && !n.archived);
+    if (existing){ await S.store.put({ ...existing, items: existing.items.concat(p.items.map(t => ({ t, done:false }))) }); return `Added ${p.items.length} to ${p.name}.`; }
+    await S.store.put({ id:newId(), kind:'list', name:p.name, items:p.items.map(t => ({ t, done:false })), tags:[p.name], pinned:false, archived:false, created:now });
+    return `Started a ${p.name} list.`;
+  }
+  const n = { id:newId(), kind:p.kind, text:p.text, tags:p.tags, pinned:p.pinned, archived:false, created:now };
+  if (p.kind === 'link') n.url = p.url;
+  if (p.kind === 'reminder'){ n.due = p.due; n.repeat = p.repeat; n.sent = false; n.armed = now; }
+  await S.store.put(n);
+  if (p.warn) return p.warn;
+  return p.kind === 'reminder' ? 'Reminder set for ' + fmtWhen(p.due) + '.' : 'Saved.';
+}
+async function saveOne(){
+  const p = parse($('#entry').value); if (!p || !S.store) return;
+  const msg = await saveParsed(p); if (msg) toast(msg);
+  $('#entry').value = ''; updatePreview(); unlockAudio();
+}
+function updatePreview(){
+  const el = $('#preview');
+  if (S.mode === 'dump'){ el.textContent = $('#entry').value.trim() ? 'Press Sort it. You’ll check each entry before anything is saved.' : ''; return; }
+  const p = parse($('#entry').value);
+  if (!p){ el.innerHTML = ''; return; }
+  el.innerHTML = describe(p);
+}
+function describe(p){
+  if (p.kind === 'list'){ const ex = S.notes.find(n => n.kind === 'list' && n.name === p.name && !n.archived); return `${ex ? 'Adds to the' : 'Starts a'} <b>${esc(p.name)}</b> list · ${p.items.length} item${p.items.length === 1 ? '' : 's'}`; }
+  const bits = [];
+  if (p.kind === 'reminder') bits.push(`Reminder for <b>${esc(fmtWhen(p.due))}</b>${p.repeat ? ' · ' + repLabel(p.repeat) : ''}`);
+  else if (p.warn) bits.push('No time found yet, so this will be a note');
+  else if (p.kind === 'link') bits.push(`Link from <b>${esc(host(p.url))}</b>`);
+  else bits.push('Note');
+  if (p.tags.length) bits.push('Tagged ' + p.tags.map(t => `<b>${esc(t)}</b>`).join(', '));
+  if (p.pinned) bits.push('<b>Pinned</b>');
+  return bits.join(' · ');
+}
+
+/* ---------- Brain dump ---------- */
+let sampleFn, sampleTried = false;
+async function getSample(){ if (!sampleTried){ sampleTried = true; try { sampleFn = window.claude ? await claude.use('sample') : null; } catch { sampleFn = null; } } return sampleFn; }
+let pending = [];
+async function sortDump(){
+  const raw = $('#entry').value.trim(); if (!raw) return;
+  const btn = $('#save'); const rv = $('#review');
+  const sample = await getSample();
+  if (!sample){
+    // Fallback: one entry per line, no AI.
+    pending = raw.split(/\n+/).map(s => parse(s)).filter(Boolean);
+    renderReview('Sorting by AI isn’t available in this view, so each line became its own entry.');
+    return;
+  }
+  btn.disabled = true; btn.textContent = 'Sorting…';
+  rv.hidden = false; rv.innerHTML = '<p>Sorting your brain dump…</p>';
+  try {
+    const res = await sample.json(
+`Split this brain dump into separate entries for a notes app. Reply with JSON only: {"entries": ["...", "..."]}.
+Write each entry in this syntax:
+- A note: the person's own words. If it clearly belongs to one of these areas, end it with that tag: ${AREAS.map(a => '#' + a).join(' ')} (dayjob = paid job, truecreeps = the podcast, twe = The Weird Emporium shop, spiritual = reiki/witchcraft/spiritual practice). Leave untagged if unsure.
+- A list: "#listname item, item, item" with a one-word lowercase list name (e.g. #groceries, #packing). Group items of the same kind into one list.
+- A reminder: "remind me to <thing> <time>" ONLY if they named a time or day. Time phrases allowed: "at 3pm", "tomorrow at 9am", "on friday at 5pm", "in 20 minutes", "every monday at 8am", "every month on the 11th".
+- Keep links exactly as written.
+Keep their wording. Do not add advice, tasks or anything they didn't say.
+
+BRAIN DUMP:
+${raw}`, { modelTier:'quick', cache:false });
+    const list = (res && Array.isArray(res.entries)) ? res.entries : [];
+    pending = list.filter(s => typeof s === 'string').map(s => parse(s)).filter(Boolean);
+    if (!pending.length) pending = raw.split(/\n+/).map(s => parse(s)).filter(Boolean);
+    renderReview();
+  } catch (e) {
+    pending = raw.split(/\n+/).map(s => parse(s)).filter(Boolean);
+    renderReview(e && e.code === 'rate_limited' ? 'Sorting is busy right now, so each line became its own entry.' : 'Sorting didn’t work this time, so each line became its own entry.');
+  } finally { btn.disabled = false; setModeUI(); }
+}
+function renderReview(note){
+  const rv = $('#review'); rv.hidden = false;
+  const label = p => p.kind === 'list' ? 'List' : cap(p.kind);
+  const body = p => p.kind === 'list' ? `<b>${esc(p.name)}</b>: ${esc(p.items.join(', '))}` : esc(p.text) + (p.tags && p.tags.length ? ' <span style="color:var(--verdigris)">' + p.tags.map(t => '#' + esc(t)).join(' ') + '</span>' : '');
+  rv.innerHTML = `<h2>${pending.length} entr${pending.length === 1 ? 'y' : 'ies'} found</h2><p>${note ? esc(note) + ' ' : ''}Untick anything you don’t want, then save.</p>
+    <ul>${pending.map((p, i) => `<li><label><input type="checkbox" data-pi="${i}" checked><span><span class="kind">${label(p)}${p.kind === 'reminder' ? ' · ' + esc(fmtWhen(p.due)) : ''}</span>${body(p)}</span></label></li>`).join('')}</ul>
+    <div class="desk-row"><button class="btn ghost small" type="button" id="rvCancel">Cancel</button><span class="sp"></span><button class="btn" type="button" id="rvSave">Save ${pending.length}</button></div>`;
+  const count = () => rv.querySelectorAll('[data-pi]:checked').length;
+  rv.addEventListener('change', () => { const b = $('#rvSave'); if (b){ b.textContent = 'Save ' + count(); b.disabled = !count(); } });
+  $('#rvCancel').onclick = () => { rv.hidden = true; rv.innerHTML = ''; pending = []; };
+  $('#rvSave').onclick = async () => {
+    const chosen = [...rv.querySelectorAll('[data-pi]:checked')].map(c => pending[+c.dataset.pi]);
+    for (const p of chosen) await saveParsed(p);
+    toast(`Saved ${chosen.length} entr${chosen.length === 1 ? 'y' : 'ies'}.`);
+    rv.hidden = true; rv.innerHTML = ''; pending = []; $('#entry').value = ''; updatePreview();
+  };
+}
+
+/* ---------- Rendering ---------- */
+const isOld = n => Date.now() - n.created > RECENT_DAYS * 864e5 && !n.pinned && !(n.kind === 'reminder' && !n.sent);
+function cardHTML(n, example){
+  const tags = (n.tags || []).filter(t => n.kind !== 'list' || t !== n.name).map(t => `<span class="tag">#${esc(t)}</span>`).join('');
+  const date = `<span class="date">${moonSVG(moonPhase(n.created), 12)}${esc(fmtDate(n.created))}</span>`;
+  let label = 'Note', body = '';
+  if (n.kind === 'note') body = `<p class="text">${linkify(n.text)}</p>`;
+  if (n.kind === 'link'){
+    label = 'Link'; const rest = n.text.replace(n.url, '').trim();
+    body = (rest ? `<p class="text">${linkify(rest)}</p>` : '') + `<a class="linkbox" href="${esc(n.url)}" target="_blank" rel="noopener"><span>${esc(host(n.url))}</span>${esc(n.url.replace(/^https?:\/\/(www\.)?/,''))}</a>`;
+  }
+  if (n.kind === 'reminder'){
+    label = n.sent ? 'Reminder · done' : 'Reminder';
+    const past = n.due <= Date.now();
+    body = `<p class="text" style="margin-top:6px">${linkify(n.text)}</p><div class="when">${esc(fmtWhen(n.due))}</div>` +
+      (n.repeat ? `<div class="left">${esc(repLabel(n.repeat))}</div>` : '') +
+      (n.sent ? '' : `<div class="left${past ? ' past' : ''}" data-left="${esc(n.id)}">${esc(fmtLeft(n.due))}</div><div class="bar" aria-hidden="true"><i data-bar="${esc(n.id)}" style="width:${barPct(n).toFixed(1)}%"></i></div>`);
+  }
+  if (n.kind === 'list'){
+    label = 'List'; const left = n.items.filter(i => !i.done).length;
+    body = `<h3>${esc(n.name)}</h3><ul class="items">${n.items.map((it, i) => `<li><label><input type="checkbox" data-tick="${i}" ${it.done ? 'checked' : ''} ${example ? 'disabled' : ''}><span class="${it.done ? 'done' : ''}">${esc(it.t)}</span></label></li>`).join('')}</ul>` +
+      (example ? '' : `<form class="additem" data-add><input type="text" id="add-${esc(n.id)}" placeholder="Add an item" aria-label="Add an item to ${esc(n.name)}"></form>`) +
+      `<div style="font-size:.8rem;color:var(--dim);margin-top:4px">${left ? left + ' of ' + n.items.length + ' left' : 'All done'}</div>`;
+  }
+  return `<article class="card${n.pinned ? ' pinned' : ''}${example ? ' example' : ''}" data-id="${esc(n.id)}" ${example ? '' : 'tabindex="0" aria-label="Open ' + label + '"'}>
+    <div class="eyebrow">${label}<span class="sp"></span>${example ? 'Example' : n.pinned ? 'Pinned' : ''}</div>${body}<div class="meta">${tags}${date}</div></article>`;
+}
+function examples(){
+  const now = Date.now(), d = new Date(); d.setHours(15,0,0,0); if (d.getTime() < now) d.setDate(d.getDate()+1);
+  return [
+    { id:'ex1', kind:'reminder', text:'return the library book', due:d.getTime(), tags:[], created: now - 36e5*3, armed: now - 36e5*3 },
+    { id:'ex2', kind:'note', text:'Idea: an episode on the Mothman sightings, told from the witnesses’ side', tags:['truecreeps'], created: now - 36e5*20 },
+    { id:'ex3', kind:'list', name:'groceries', items:[{t:'earl grey',done:true},{t:'oat milk',done:false},{t:'candles',done:false}], tags:['groceries'], created: now - 864e5*2 },
+  ];
+}
+function focusItems(){
+  const live = S.notes.filter(n => !n.archived);
+  const next = live.filter(n => n.kind === 'reminder' && !n.sent).sort((a,b) => a.due - b.due)[0];
+  const rest = live.filter(n => n !== next && !(n.kind === 'reminder' && n.sent)).sort((a,b) => (b.pinned - a.pinned) || (b.created - a.created));
+  const picked = (next ? [next] : []).concat(rest).slice(0, 3);
+  return { picked, more: live.length - picked.length };
+}
+function overviewItems(){
+  const q = S.q.trim().toLowerCase();
+  const pool = S.notes.filter(n => S.vault ? n.archived : !n.archived).filter(n => !S.tag || (n.tags || []).includes(S.tag));
+  const matched = pool.filter(n => !q || [n.text, n.name, n.url, ...(n.tags||[]), ...((n.items||[]).map(i => i.t))].join(' ').toLowerCase().includes(q));
+  const sorted = matched.sort((a,b) => (b.pinned - a.pinned) || (b.created - a.created));
+  if (q || S.vault || S.showOld) return { items: sorted, hidden: 0 };
+  const recent = sorted.filter(n => !isOld(n));
+  return { items: recent, hidden: sorted.length - recent.length };
+}
+function renderTags(){
+  const counts = {};
+  S.notes.filter(n => S.vault ? n.archived : !n.archived).forEach(n => (n.tags || []).forEach(t => counts[t] = (counts[t] || 0) + 1));
+  const list = Object.keys(counts).sort((a,b) => counts[b] - counts[a] || a.localeCompare(b));
+  if (S.tag && !counts[S.tag]) S.tag = null;
+  $('#tags').innerHTML = list.length ? `<button class="chip" type="button" data-tag="" aria-pressed="${!S.tag}">All</button>` + list.map(t => `<button class="chip" type="button" data-tag="${esc(t)}" aria-pressed="${S.tag === t}">${esc(t)}<span class="n">${counts[t]}</span></button>`).join('') : '';
+}
+function render(){
+  const out = $('#out');
+  $('#tools').hidden = S.view !== 'overview';
+  document.querySelectorAll('[data-view]').forEach(b => b.setAttribute('aria-pressed', b.dataset.view === S.view));
+  if (!S.ready){ out.innerHTML = '<div class="empty">Loading your notes…</div>'; return; }
+  if (S.store && S.store.mode === 'local') setStatus('Saved in this browser only');
+  if (!S.notes.length){
+    out.innerHTML = `<div class="empty"><b>Nothing here yet.</b>Write your first thought above. These examples show what entries look like and go away once you start.</div><div class="focus">${examples().map(n => cardHTML(n, true)).join('')}</div>`;
+    return;
+  }
+  if (S.view === 'focus'){
+    const { picked, more } = focusItems();
+    out.innerHTML = picked.length ? `<div class="focus">${picked.map(n => cardHTML(n)).join('')}</div>` + (more > 0 ? `<div class="more"><button class="linklike" type="button" data-goto="overview">${more} more in Overview</button></div>` : '')
+      : `<div class="empty"><b>All clear.</b>Everything else is in Overview.</div>`;
+    return;
+  }
+  renderTags();
+  const { items, hidden } = overviewItems();
+  const olderBtn = hidden ? `<div class="more"><button class="linklike" type="button" data-older>Show ${hidden} older entr${hidden === 1 ? 'y' : 'ies'}</button></div>` : '';
+  if (!items.length){
+    out.innerHTML = `<div class="empty"><b>${S.vault ? 'The vault is empty.' : S.q ? 'Nothing matches.' : 'Nothing recent.'}</b>${S.vault ? 'Entries you move to the vault rest here until you restore them.' : S.q ? 'Try another word, or clear the search.' : ''}</div>` + olderBtn;
+    return;
+  }
+  if (S.group){
+    const groups = {}; items.forEach(n => ((n.tags && n.tags.length) ? n.tags : ['no tag']).forEach(t => (groups[t] = groups[t] || []).push(n)));
+    const keys = Object.keys(groups).sort((a,b) => a === 'no tag' ? 1 : b === 'no tag' ? -1 : groups[b].length - groups[a].length);
+    out.innerHTML = keys.map(k => `<section class="group"><h2><span>${esc(k)}</span><span>${groups[k].length}</span></h2><div class="feed">${groups[k].map(n => cardHTML(n)).join('')}</div></section>`).join('') + olderBtn;
+  } else out.innerHTML = `<div class="feed">${items.map(n => cardHTML(n)).join('')}</div>` + olderBtn;
+}
+function tickCountdowns(){
+  document.querySelectorAll('[data-left]').forEach(el => {
+    const n = S.notes.find(x => x.id === el.dataset.left); if (!n) return;
+    el.textContent = fmtLeft(n.due); el.classList.toggle('past', n.due <= Date.now());
+    const b = document.querySelector(`[data-bar="${CSS.escape(n.id)}"]`); if (b) b.style.width = barPct(n).toFixed(1) + '%';
+  });
+}
+
+/* ---------- Detail sheet ---------- */
+let sheetEl = null, lastFocus = null;
+function closeSheet(){ if (sheetEl){ sheetEl.remove(); sheetEl = null; if (lastFocus) lastFocus.focus(); } }
+function openSheet(html, onMount){
+  closeSheet(); lastFocus = document.activeElement;
+  sheetEl = document.createElement('div'); sheetEl.className = 'scrim';
+  sheetEl.innerHTML = `<div class="sheet" role="dialog" aria-modal="true">${html}</div>`;
+  sheetEl.addEventListener('click', e => { if (e.target === sheetEl) closeSheet(); });
+  document.body.appendChild(sheetEl); onMount && onMount(sheetEl.firstElementChild);
+}
+function openNote(id){
+  const n = S.notes.find(x => x.id === id); if (!n) return;
+  const editable = n.kind !== 'list';
+  const raw = editable ? n.text + ((n.tags||[]).length ? ' ' + n.tags.map(t => '#' + t).join(' ') : '') : '';
+  openSheet(`<h2>${n.kind === 'list' ? esc(cap(n.name)) : cap(n.kind)}</h2>
+    <p class="sub">Written ${esc(fmtDate(n.created))}${n.kind === 'reminder' ? ' · ' + (n.sent ? 'done' : 'due ' + esc(fmtWhen(n.due))) + (n.repeat ? ', ' + esc(repLabel(n.repeat)).toLowerCase() : '') : ''}</p>
+    ${editable ? `<textarea id="edit-text" aria-label="Edit text">${esc(raw)}</textarea>` : `<p class="sub">Tick items on the card. To add several at once, write <b>#${esc(n.name)} item, item</b> in the box at the top.</p><div class="row"><button class="btn ghost small" type="button" data-act="clear">Remove ticked items</button></div>`}
+    <div class="row">
+      <button class="btn ghost small" type="button" data-act="pin">${n.pinned ? 'Unpin' : 'Pin'}</button>
+      <button class="btn ghost small" type="button" data-act="arch">${n.archived ? 'Restore' : 'Move to vault'}</button>
+      <button class="btn danger small" type="button" data-act="del">Delete</button>
+      <span class="sp"></span>
+      ${editable ? '<button class="btn small" type="button" data-act="save">Save</button>' : '<button class="btn small" type="button" data-act="close">Done</button>'}
+    </div>`, sh => {
+    sh.addEventListener('click', async e => {
+      const b = e.target.closest('[data-act]'); if (!b) return;
+      const act = b.dataset.act;
+      if (act === 'close') return closeSheet();
+      if (act === 'pin'){ await S.store.put({ ...n, pinned: !n.pinned }); toast(n.pinned ? 'Unpinned.' : 'Pinned.'); return closeSheet(); }
+      if (act === 'arch'){ await S.store.put({ ...n, archived: !n.archived }); toast(n.archived ? 'Restored.' : 'Moved to the vault.'); return closeSheet(); }
+      if (act === 'clear'){ await S.store.put({ ...n, items: n.items.filter(i => !i.done) }); return closeSheet(); }
+      if (act === 'del'){
+        if (b.dataset.armed){ await S.store.del(n.id); toast('Deleted.'); return closeSheet(); }
+        b.dataset.armed = '1'; b.textContent = 'Tap again to delete'; return;
+      }
+      if (act === 'save'){
+        const txt = sh.querySelector('#edit-text').value.trim(); if (!txt) return;
+        const tags = []; const body = txt.replace(/(^|\s)#([A-Za-z][\w-]*)/g, (_, sp, t) => { t = t.toLowerCase(); if (t !== 'pin' && !tags.includes(t)) tags.push(t); return sp; }).replace(/[ \t]{2,}/g,' ').trim();
+        const next = { ...n, text: body, tags };
+        if (n.kind === 'link'){ const u = (body.match(/https?:\/\/[^\s<>"]+/i) || [])[0]; if (u) next.url = u; else next.kind = 'note'; }
+        await S.store.put(next); toast('Saved.'); closeSheet();
+      }
+    });
+    const ta = sh.querySelector('textarea'); if (ta) ta.focus(); else sh.querySelector('button').focus();
+  });
+}
+
+/* ---------- Guide + export ---------- */
+function openGuide(){
+  openSheet(`<h2>How to write things</h2><p class="sub">Just write. Everything below is optional.</p>
+    <ul class="cheats">
+      <li><code>The library closes at 6 on Sundays</code><p>Plain text becomes a note.</p></li>
+      <li><code>Sticker idea: Mothman in a Santa hat #twe</code><p>A tag at the end files it. Tags show up in Overview.</p></li>
+      <li><code>#groceries tea, candles, oat milk</code><p>A tag at the start makes a list, or adds to it if the list already exists.</p></li>
+      <li><code>remind me to call Mum tomorrow at 9am</code><p>Also works: <i>at 3pm</i>, <i>in 20 minutes</i>, <i>on friday at 5pm</i>, <i>every monday at 8am</i>, <i>every month on the 11th</i>. Reminders chime while Mindsey is open.</p></li>
+      <li><code>#pin</code><p>Add it anywhere to keep the entry at the top.</p></li>
+      <li><code>Brain dump</code><p>Write or speak everything at once. Mindsey splits it into separate entries and shows them to you before saving.</p></li>
+    </ul>
+    <p class="sub" style="margin-top:12px">Keys on a computer: <kbd>/</kbd> jumps to the box · <kbd>F</kbd> switches Focus and Overview · <kbd>Esc</kbd> closes this.</p>
+    <h2 style="margin-top:16px;font-size:1.25rem">Export</h2><p class="sub">Download everything, including the vault.</p>
+    <div class="row"><button class="btn ghost small" type="button" data-exp="md">Markdown</button><button class="btn ghost small" type="button" data-exp="json">JSON</button><span class="sp"></span><button class="btn small" type="button" data-x>Close</button></div>
+    <p class="sub" id="exp-msg" aria-live="polite"></p>`, sh => {
+    sh.querySelector('[data-x]').onclick = closeSheet;
+    sh.querySelectorAll('[data-exp]').forEach(b => b.onclick = () => exportAll(b.dataset.exp, sh.querySelector('#exp-msg')));
+    sh.querySelector('[data-x]').focus();
+  });
+}
+async function exportAll(kind, msg){
+  const all = S.notes.slice().sort((a,b) => a.created - b.created);
+  let data;
+  if (kind === 'json') data = JSON.stringify(all, null, 2);
+  else data = '# Mindsey\n\n' + all.map(n => {
+    const h = `## ${new Date(n.created).toLocaleString()}${n.archived ? ' (vault)' : ''}${n.pinned ? ' (pinned)' : ''}\n`;
+    const tags = (n.tags||[]).length ? '\n\n' + n.tags.map(t => '#' + t).join(' ') : '';
+    if (n.kind === 'list') return h + `**${n.name}**\n\n` + n.items.map(i => `- [${i.done ? 'x' : ' '}] ${i.t}`).join('\n');
+    if (n.kind === 'reminder') return h + `Reminder (${new Date(n.due).toLocaleString()}${n.repeat ? ', ' + repLabel(n.repeat) : ''}): ${n.text}` + tags;
+    return h + n.text + tags;
+  }).join('\n\n');
+  let dl = null; try { dl = window.claude ? await claude.use('downloads') : null; } catch {}
+  if (!dl){ msg.textContent = 'Downloads aren’t available in this view. Open Mindsey on claude.ai to export.'; return; }
+  try { await dl.save({ filename: 'mindsey.' + (kind === 'json' ? 'json' : 'md'), data }); msg.textContent = 'Exported ' + all.length + ' entries.'; }
+  catch (e) { msg.textContent = e && e.code === 'declined' ? 'Export cancelled.' : 'The export didn’t go through. Try again.'; }
+}
+
+/* ---------- Reminders ---------- */
+let audioCtx = null;
+function unlockAudio(){ try { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === 'suspended') audioCtx.resume(); } catch {} }
+function chime(){
+  if (!audioCtx) return;
+  try { [880, 1318.5, 1760].forEach((f, i) => {
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain(), t = audioCtx.currentTime + i * .18;
+    o.type = 'sine'; o.frequency.value = f; g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.12, t + .02); g.gain.exponentialRampToValueAtTime(.0001, t + 1.4);
+    o.connect(g).connect(audioCtx.destination); o.start(t); o.stop(t + 1.5);
+  }); } catch {}
+}
+const fired = new Set();
+function checkReminders(){
+  if (!S.store) return;
+  const now = Date.now();
+  S.notes.forEach(n => {
+    if (n.kind !== 'reminder' || n.sent || n.archived || n.due > now) return;
+    const key = n.id + ':' + n.due; if (fired.has(key)) return; fired.add(key);
+    const late = now - n.due > 5 * 6e4;
+    toast((late ? 'From earlier (' + fmtWhen(n.due) + '): ' : 'Reminder: ') + n.text, true);
+    if (!late) chime();
+    if (n.repeat) S.store.put({ ...n, due: nextOccurrence(n.repeat, new Date(Math.max(now, n.due + 1000))).getTime(), armed: now });
+    else S.store.put({ ...n, sent: true });
+  });
+}
+
+/* ---------- Toasts ---------- */
+function toast(text, bell){
+  const t = document.createElement('div'); t.className = 'toast' + (bell ? ' bell' : '');
+  t.innerHTML = `${bell ? moonSVG(.5, 20) : ''}<span>${esc(text)}</span><button type="button">${bell ? 'Got it' : 'OK'}</button>`;
+  t.querySelector('button').onclick = () => t.remove();
+  $('#toasts').appendChild(t);
+  if (!bell) setTimeout(() => t.remove(), 4000);
+}
+
+/* ---------- Voice ---------- */
+let dict = null, dictBase = '';
+async function initDictation(){
+  try { dict = window.claude ? await claude.use('dictation') : null; } catch { dict = null; }
+  if (!dict) return;
+  $('#mic').hidden = false;
+  dict.onPartial(({ text }) => { $('#entry').value = dictBase + text; });
+  dict.onFinal(({ text }) => { dictBase = (dictBase + text).replace(/\s*$/, ' '); $('#entry').value = dictBase; updatePreview(); });
+  dict.onState(({ state, reason }) => {
+    const on = state === 'listening' || state === 'starting';
+    $('#mic').setAttribute('aria-pressed', on); $('#mic').setAttribute('aria-label', on ? 'Stop listening' : 'Speak instead of typing');
+    $('#micNote').textContent = on ? 'Listening… tap to stop' : '';
+    if (state === 'idle'){
+      $('#entry').value = $('#entry').value.trim(); updatePreview();
+      if (reason === 'not_granted'){ $('#mic').hidden = true; toast('Microphone isn’t allowed here. You can still type.'); }
+    }
+  });
+}
+function toggleMic(){
+  if (!dict) return;
+  unlockAudio();
+  if (dict.active()){ dict.stop().catch(() => {}); return; }
+  const v = $('#entry').value; dictBase = v && !/\s$/.test(v) ? v + ' ' : v;
+  dict.start().catch(e => { if (e && e.code === 'not_granted'){ $('#mic').hidden = true; } else if (e && e.code !== 'dismissed') toast('The microphone didn’t start. Try again.'); });
+}
+
+/* ---------- Sky + motion ---------- */
+function sky(){
+  const cv = $('#sky'), ctx = cv.getContext('2d'); let stars = [], lines = [], w, h, raf = 0;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  function size(){
+    const dpr = Math.min(2, window.devicePixelRatio || 1); w = innerWidth; h = innerHeight;
+    cv.width = w * dpr; cv.height = h * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    seed = 7; stars = Array.from({ length: Math.round(w * h / 5200) }, () => ({ x: rnd()*w, y: rnd()*h, r: rnd()*1.1 + .2, p: rnd()*6.28, s: rnd()*.8 + .2 }));
+    lines = Array.from({ length: 4 }, () => { const cx = rnd()*w, cy = rnd()*h*.9; return Array.from({ length: 5 }, () => ({ x: cx + (rnd()-.5)*220, y: cy + (rnd()-.5)*160 })); });
+  }
+  function draw(t){
+    const moving = S.motion && !reduce;
+    ctx.clearRect(0, 0, w, h);
+    const g = ctx.createRadialGradient(w*.8, -h*.1, 0, w*.8, -h*.1, h*1.1); g.addColorStop(0, 'rgba(60,52,110,.35)'); g.addColorStop(1, 'rgba(13,16,32,0)');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+    ctx.strokeStyle = 'rgba(201,164,92,.12)'; ctx.lineWidth = .7;
+    lines.forEach(pts => { ctx.beginPath(); pts.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); ctx.stroke();
+      pts.forEach(p => { ctx.fillStyle = 'rgba(234,223,198,.55)'; ctx.beginPath(); ctx.arc(p.x, p.y, 1.6, 0, 6.28); ctx.fill(); }); });
+    stars.forEach(s => { const a = moving ? .35 + .45 * (0.5 + 0.5 * Math.sin(t / 1000 * s.s + s.p)) : .6; ctx.fillStyle = `rgba(234,223,198,${a.toFixed(3)})`; ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 6.28); ctx.fill(); });
+    raf = moving ? requestAnimationFrame(draw) : 0;
+  }
+  size();
+  addEventListener('resize', () => { size(); if (!raf) draw(0); });
+  return () => { if (!raf) raf = requestAnimationFrame(draw); };
+}
+let redrawSky = () => {};
+function applyMotion(){
+  document.body.classList.toggle('motion', S.motion);
+  $('#motionBtn').textContent = S.motion ? 'Stars: moving' : 'Stars: still';
+  $('#motionBtn').setAttribute('aria-pressed', S.motion);
+  $('#motionBtn').setAttribute('aria-label', S.motion ? 'Stars are moving. Tap to make them still.' : 'Stars are still. Tap to make them move.');
+  redrawSky();
+}
+
+/* ---------- Mode ---------- */
+function setModeUI(){
+  const dump = S.mode === 'dump';
+  $('#desk').classList.toggle('dumping', dump);
+  document.querySelectorAll('[data-mode]').forEach(b => b.setAttribute('aria-pressed', b.dataset.mode === S.mode));
+  $('#entryLabel').textContent = dump ? 'Brain dump' : 'Write it down';
+  $('#entry').placeholder = dump ? 'Everything on your mind, in any order. Ideas, links, errands, times…' : 'An idea, a link, a list, a reminder…';
+  $('#save').textContent = dump ? 'Sort it' : 'Save';
+  updatePreview();
+}
+
+/* ---------- Events ---------- */
+$('#save').onclick = () => S.mode === 'dump' ? sortDump() : saveOne();
+$('#mic').onclick = toggleMic;
+$('#entry').addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  if (S.mode === 'dump'){ if (e.metaKey || e.ctrlKey){ e.preventDefault(); sortDump(); } return; }
+  if (!e.shiftKey){ e.preventDefault(); saveOne(); }
+});
+$('#entry').addEventListener('input', updatePreview);
+document.querySelector('.modes').addEventListener('click', e => { const b = e.target.closest('[data-mode]'); if (!b) return; S.mode = b.dataset.mode; setModeUI(); $('#entry').focus(); });
+document.querySelector('.seg').addEventListener('click', e => { const b = e.target.closest('[data-view]'); if (!b) return; S.view = b.dataset.view; pref.set('view', S.view); render(); });
+$('#q').addEventListener('input', e => { S.q = e.target.value; render(); });
+$('#groupBtn').onclick = () => { S.group = !S.group; $('#groupBtn').setAttribute('aria-pressed', S.group); render(); };
+$('#vaultBtn').onclick = () => { S.vault = !S.vault; S.tag = null; $('#vaultBtn').setAttribute('aria-pressed', S.vault); render(); };
+$('#tags').addEventListener('click', e => { const b = e.target.closest('[data-tag]'); if (!b) return; S.tag = b.dataset.tag || null; render(); });
+$('#motionBtn').onclick = () => { S.motion = !S.motion; pref.set('motion', S.motion ? 'moving' : 'still'); applyMotion(); };
+$('#guideBtn').onclick = openGuide;
+$('#out').addEventListener('change', e => {
+  const cb = e.target.closest('[data-tick]'); if (!cb) return;
+  const n = S.notes.find(x => x.id === cb.closest('.card').dataset.id); if (!n) return;
+  const items = n.items.map((it, i) => i === +cb.dataset.tick ? { ...it, done: cb.checked } : it);
+  S.store.put({ ...n, items });
+  if (cb.checked && items.every(i => i.done)) toast(`Everything on ${n.name} is done. Nice work.`);
+});
+$('#out').addEventListener('submit', e => {
+  const f = e.target.closest('[data-add]'); if (!f) return; e.preventDefault();
+  const n = S.notes.find(x => x.id === f.closest('.card').dataset.id); const v = f.querySelector('input').value.trim(); if (!n || !v) return;
+  S.store.put({ ...n, items: n.items.concat(v.split(',').map(t => ({ t: t.trim(), done:false })).filter(i => i.t)) });
+});
+$('#out').addEventListener('click', e => {
+  if (e.target.closest('[data-goto]')){ S.view = 'overview'; pref.set('view', S.view); render(); return; }
+  if (e.target.closest('[data-older]')){ S.showOld = true; render(); return; }
+  if (e.target.closest('a, input, label, form, button')) return;
+  const c = e.target.closest('.card:not(.example)'); if (c) openNote(c.dataset.id);
+});
+$('#out').addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.matches('.card')) openNote(e.target.dataset.id); });
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape'){ closeSheet(); return; }
+  if (sheetEl || e.metaKey || e.ctrlKey || e.altKey || e.target.closest('input, textarea')) return;
+  if (e.key === '/'){ e.preventDefault(); $('#entry').focus(); }
+  else if (e.key === 'f' || e.key === 'F'){ S.view = S.view === 'focus' ? 'overview' : 'focus'; pref.set('view', S.view); render(); }
+});
+document.addEventListener('pointerdown', unlockAudio, { once: true });
+
+/* ---------- Boot ---------- */
+S.motion = pref.get('motion', 'moving') !== 'still';
+S.view = pref.get('view', 'focus') === 'overview' ? 'overview' : 'focus';
+redrawSky = sky(); applyMotion(); renderMoon(); setModeUI(); render();
+setInterval(renderMoon, 36e5);
+setInterval(() => { tickCountdowns(); checkReminders(); }, 15000);
+(async () => {
+  initDictation();
+  const cloud = await cloudStore();
+  S.store = cloud || localStore();
+  if (cloud) render();
+})();
+window.__parse = parse;
+})();
+</script>
